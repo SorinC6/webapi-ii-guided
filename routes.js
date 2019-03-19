@@ -104,8 +104,30 @@ routes.get('/api/hubs/:id/messages', (req, res) => {
 	const idHub = req.params;
 
 	Hubs.findHubMessages(idHub.id)
-		.then((mess) => res.json(mess))
-		.catch((err) => res.status(500).json({ error: 'error getting the ' }));
+		.then((mess) => {
+			if (mess.length > 0) {
+				res.json(mess);
+			} else {
+				res.status(404).json({ messsage: 'TheHub id is not there' });
+			}
+		})
+		.catch((err) => res.status(500).json({ error: 'error getting the messages' }));
+});
+
+routes.post('/api/hubs/:id/messages', async (req, res) => {
+	const text = req.body.text;
+	const sender = req.body.sender;
+	const id = req.params.id;
+	try {
+		const mess = await Hubs.addMessage({
+			hub_id: id,
+			text: text,
+			sender: sender
+		});
+		res.status(201).json(mess);
+	} catch (err) {
+		res.status(500).json({ message: 'Something went wrong' });
+	}
 });
 
 module.exports = routes;
